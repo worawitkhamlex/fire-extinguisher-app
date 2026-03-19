@@ -77,12 +77,29 @@ function renderForm(container, ext) {
         <button class="btn btn-outline btn-sm flex-1" id="btn-clear-all">↺ ล้างทั้งหมด</button>
       </div>
 
-      <!-- Photo Section (placeholder for future camera feature) -->
+      <!-- Photo Section -->
       <div class="inspect-section">
-        <div class="section-title">📷 รูปถ่ายหลักฐาน</div>
-        <div class="photo-section" id="photo-placeholder">
-          <div class="photo-section__icon">📷</div>
-          <div class="photo-section__text">แตะเพื่อถ่ายรูป (เร็วๆ นี้)</div>
+        <div class="section-title">📷 รูปถ่ายหลักฐาน <span id="photo-count" style="color:var(--color-primary)"></span></div>
+        <div id="photo-gallery"></div>
+        <button class="btn btn-outline btn-block" id="btn-take-photo" style="margin-top:var(--space-sm)">
+          📷 ถ่ายรูป
+        </button>
+      </div>
+
+      <!-- Camera Modal (hidden by default) -->
+      <div class="camera-modal hidden" id="camera-modal">
+        <div class="camera-modal__header">
+          <span>📷 ถ่ายรูปหลักฐาน</span>
+          <button class="camera-modal__close" id="camera-close">✕</button>
+        </div>
+        <div class="camera-modal__body">
+          <video id="camera-video" autoplay playsinline></video>
+          <canvas id="camera-canvas" class="hidden"></canvas>
+        </div>
+        <div class="camera-modal__actions">
+          <button class="btn btn-outline" id="camera-switch" style="width:56px;height:56px;border-radius:50%;padding:0;font-size:1.2rem">🔄</button>
+          <button class="btn btn-primary" id="camera-capture" style="width:72px;height:72px;border-radius:50%;padding:0;font-size:1.5rem">📸</button>
+          <div style="width:56px"></div>
         </div>
       </div>
 
@@ -228,9 +245,70 @@ function bindEvents(container, ext) {
     currentRecord.remarks = e.target.value;
   });
 
-  // Photo placeholder
-  container.querySelector('#photo-placeholder').addEventListener('click', () => {
-    showToast('ฟีเจอร์ถ่ายรูปจะเปิดใช้งานเร็วๆ นี้', 'info');
+  // Photo gallery render
+  renderPhotoGallery(container);
+
+  // Camera
+  let cameraStream = null;
+  let facingMode = 'environment'; // rear camera default
+
+  container.querySelector('#btn-take-photo').addEventListener('click', () => openCamera());
+
+  async function openCamera() {
+    const modal = container.querySelector('#camera-modal');
+    const video = container.querySelector('#camera-video');
+    modal.classList.remove('hidden');
+
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 960 } },
+        audio: false,
+      });
+      video.srcObject = cameraStream;
+    } catch (err) {
+      console.error('Camera error:', err);
+      showToast('เปิดกล้องไม่ได้: ' + err.message, 'error');
+      closeCamera();
+    }
+  }
+
+  function closeCamera() {
+    const modal = container.querySelector('#camera-modal');
+    const video = container.querySelector('#camera-video');
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(t => t.stop());
+      cameraStream = null;
+    }
+    video.srcObject = null;
+    modal.classList.add('hidden');
+  }
+
+  container.querySelector('#camera-close').addEventListener('click', closeCamera);
+
+  container.querySelector('#camera-switch').addEventListener('click', () => {
+    facingMode = facingMode === 'environment' ? 'user' : 'environment';
+    closeCamera();
+    openCamera();
+  });
+
+  container.querySelector('#camera-capture').addEventListener('click', () => {
+    const video = container.querySelector('#camera-video');
+    const canvas = container.querySelector('#camera-canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0);
+
+    // Compress to JPEG base64
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+    currentRecord.photos.push({
+      data: dataUrl,
+      timestamp: new Date().toISOString(),
+    });
+
+    closeCamera();
+    renderPhotoGallery(container);
+    showToast('ถ่ายรูปสำเร็จ (' + currentRecord.photos.length + ' รูป)', 'success');
   });
 
   // Save
@@ -273,4 +351,45 @@ function updateSuggestion(container) {
   } else if (el) {
     el.textContent = '';
   }
+}
+
+function renderPhotoGallery(container) {
+  const gallery = container.querySelector('#photo-gallery');
+  const countEl = container.querySelector('#photo-count');
+  const photos = currentRecord.photos || [];
+
+  if (countEl) countEl.textContent = photos.length > 0 ? `(${photos.length} รูป)` : '';
+
+  if (photos.length === 0) {
+    gallery.innerHTML = `
+      <div class="photo-section" style="padding:var(--space-xl)">
+        <div class="photo-section__icon">📷</div>
+        <div class="photo-section__text">ยังไม่มีรูปถ่าย — กดปุ่มด้านล่างเพื่อถ่ายรูป</div>
+      </div>
+    `;
+    return;
+  }
+
+  gallery.innerHTML = `
+    <div class="photo-grid">
+      ${photos.map((p, i) => `
+        <div class="photo-thumb">
+          <img src="${p.data}" alt="รูปที่ ${i + 1}">
+          <button class="photo-thumb__delete" data-idx="${i}">✕</button>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  // Delete handlers
+  gallery.querySelectorAll('.photo-thumb__delete').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.idx);
+      if (confirm(`ลบรูปที่ ${idx + 1}?`)) {
+        currentRecord.photos.splice(idx, 1);
+        renderPhotoGallery(container);
+      }
+    });
+  });
 }
