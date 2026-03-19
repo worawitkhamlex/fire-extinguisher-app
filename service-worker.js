@@ -3,7 +3,7 @@
  * Cache-first for app shell, network-first for data.
  */
 
-const CACHE_NAME = 'fire-inspection-v1';
+const CACHE_NAME = 'fire-inspection-v2';
 const APP_SHELL = [
   './',
   './index.html',
