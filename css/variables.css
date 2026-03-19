@@ -1,0 +1,82 @@
+/* ============================================
+   Fire Extinguisher Inspection System
+   Design Tokens — Industrial Safety Theme
+   ============================================ */
+
+:root {
+  /* — Primary Palette — */
+  --color-bg:          #0F1419;
+  --color-surface:     #1A2029;
+  --color-surface-2:   #222B36;
+  --color-surface-3:   #2C3644;
+  --color-border:      #334155;
+  --color-border-light:#3E4C5E;
+
+  /* — Text — */
+  --color-text:        #E8ECF1;
+  --color-text-2:      #94A3B8;
+  --color-text-3:      #64748B;
+  --color-text-inv:    #0F1419;
+
+  /* — Safety Accent (Orange/Red) — */
+  --color-primary:     #F97316;
+  --color-primary-dim: #C2590F;
+  --color-primary-glow:rgba(249,115,22,0.15);
+  --color-primary-text:#FFF7ED;
+
+  /* — Status Colors — */
+  --color-pass:        #22C55E;
+  --color-pass-bg:     rgba(34,197,94,0.12);
+  --color-fail:        #EF4444;
+  --color-fail-bg:     rgba(239,68,68,0.12);
+  --color-warn:        #EAB308;
+  --color-warn-bg:     rgba(234,179,8,0.12);
+  --color-info:        #3B82F6;
+  --color-info-bg:     rgba(59,130,246,0.12);
+
+  /* — Typography — */
+  --font-sans:  'IBM Plex Sans Thai', 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono:  'IBM Plex Mono', monospace;
+
+  --text-xs:    0.75rem;
+  --text-sm:    0.8125rem;
+  --text-base:  0.9375rem;
+  --text-lg:    1.0625rem;
+  --text-xl:    1.25rem;
+  --text-2xl:   1.5rem;
+  --text-3xl:   1.875rem;
+
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-semi:    600;
+  --weight-bold:    700;
+
+  /* — Spacing — */
+  --space-xs:   0.25rem;
+  --space-sm:   0.5rem;
+  --space-md:   0.75rem;
+  --space-lg:   1rem;
+  --space-xl:   1.25rem;
+  --space-2xl:  1.5rem;
+  --space-3xl:  2rem;
+
+  /* — Radius — */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-xl:  20px;
+
+  /* — Shadows — */
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-elevated: 0 4px 12px rgba(0,0,0,0.4);
+
+  /* — Transitions — */
+  --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast:   150ms;
+  --dur-normal: 250ms;
+
+  /* — Layout — */
+  --header-h:   56px;
+  --nav-h:      64px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
