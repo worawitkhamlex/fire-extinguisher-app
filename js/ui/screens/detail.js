@@ -76,11 +76,15 @@ export async function renderDetail(container, params) {
         </div>
       </div>
 
-      <!-- Photos (placeholder) -->
+      <!-- Photos -->
       ${ins.photos && ins.photos.length > 0 ? `
-        <div class="section-title">📷 รูปถ่ายหลักฐาน</div>
-        <div class="card card-compact">
-          <div style="color:var(--color-text-3); font-size:var(--text-sm)">${ins.photos.length} รูป (แสดงภาพเร็วๆ นี้)</div>
+        <div class="section-title">📷 รูปถ่ายหลักฐาน (${ins.photos.length} รูป)</div>
+        <div class="photo-grid">
+          ${ins.photos.map((p, i) => `
+            <div class="photo-thumb photo-thumb--view" data-idx="${i}">
+              <img src="${p.data}" alt="รูปที่ ${i + 1}">
+            </div>
+          `).join('')}
         </div>
       ` : ''}
 
@@ -111,5 +115,29 @@ export async function renderDetail(container, params) {
   });
   container.querySelector('#btn-reinspect').addEventListener('click', () => {
     navigate(`inspect?code=${encodeURIComponent(ins.extinguisher_code)}`);
+  });
+
+  // Photo viewer — tap to fullscreen
+  container.querySelectorAll('.photo-thumb--view').forEach(thumb => {
+    thumb.addEventListener('click', () => {
+      const idx = parseInt(thumb.dataset.idx);
+      const photo = ins.photos[idx];
+      if (!photo) return;
+
+      const overlay = document.createElement('div');
+      overlay.className = 'photo-viewer-overlay';
+      overlay.innerHTML = `
+        <div class="photo-viewer">
+          <img src="${photo.data}" alt="รูปที่ ${idx + 1}">
+          <button class="photo-viewer__close">✕ ปิด</button>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay || e.target.classList.contains('photo-viewer__close')) {
+          overlay.remove();
+        }
+      });
+    });
   });
 }
